@@ -4,7 +4,7 @@ import sqlite3
 cam = cv2.VideoCapture(0)
 detector=cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-# Hàm cập nhật tên và ID vào CSDL
+# 従業員情報をデータベースに追加する
 def insertOrUpdate(id, name):
     conn=sqlite3.connect("FaceBaseNew.db")
     cursor=conn.execute('SELECT * FROM People WHERE ID='+str(id))
@@ -34,10 +34,10 @@ while(True):
 
     ret, img = cam.read()
 
-    # Lật ảnh cho đỡ bị ngược
+    # 画像を上下逆にします
     img = cv2.flip(img,1)
 
-    # Kẻ khung giữa màn hình để người dùng đưa mặt vào khu vực này
+    # フレームを描く
     centerH = img.shape[0] // 2;
     centerW = img.shape[1] // 2;
     sizeboxW = 300;
@@ -45,23 +45,23 @@ while(True):
     cv2.rectangle(img, (centerW - sizeboxW // 2, centerH - sizeboxH // 2),
                   (centerW + sizeboxW // 2, centerH + sizeboxH // 2), (255, 255, 255), 5)
 
-    # Đưa ảnh về ảnh xám
+    # 写真を灰色にする
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # Nhận diện khuôn mặt
+    # 顔認識
     faces = detector.detectMultiScale(gray, 1.3, 5)
     for (x, y, w, h) in faces:
-        # Vẽ hình chữ nhật quanh mặt nhận được
+        # 受け取った顔の周りに長方形を描く
         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
         sampleNum = sampleNum + 1
-        # Ghi dữ liệu khuôn mặt vào thư mục dataSet
+        # 顔データをdataSetディレクトリに書き込みます
         cv2.imwrite("dataSet/User." + id + '.' + str(sampleNum) + ".jpg", gray[y:y + h, x:x + w])
 
     cv2.imshow('frame', img)
-    # Check xem có bấm q hoặc trên 100 ảnh sample thì thoát
-    if cv2.waitKey(100) & 0xFF == ord('q'):
+    # qまたは 200以上のサンプル画像を押して終了
+    if cv2.waitKey(200) & 0xFF == ord('q'):
         break
-    elif sampleNum>100:
+    elif sampleNum>200:
         break
 
 cam.release()

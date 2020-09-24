@@ -7,38 +7,38 @@ recognizer = cv2.face.LBPHFaceRecognizer_create()
 detector= cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
 def getImagesAndLabels(path):
-    # Lấy tất cả các file trong thư mục
+    # ディレクトリ内のすべてのファイルを取得する
     imagePaths=[os.path.join(path,f) for f in os.listdir(path)] 
-    #create empth face list
+    #空の顔リストを作成する
     faceSamples=[]
-    #create empty ID list
+    #空のIDリストを作成する
     Ids=[]
-    #now looping through all the image paths and loading the Ids and the images
+    #すべての画像パスをループし、IDと画像を読み込む
     for imagePath in imagePaths:
         if (imagePath[-3:]=="jpg"):
-            print(imagePath[-3:])
-            #loading the image and converting it to gray scale
+            print(imagePath[0:])
+            #画像を読み込んでグレースケールに変換する
             pilImage=Image.open(imagePath).convert('L')
-            #Now we are converting the PIL image into numpy array
+            #PIL画像をnumpy配列に変換しています
             imageNp=np.array(pilImage,'uint8')
-            #getting the Id from the image
+            #画像からIDを取得する
             Id=int(os.path.split(imagePath)[-1].split(".")[1])
-            # extract the face from the training image sample
+            # トレーニング画像サンプルから顔を抽出する
             faces=detector.detectMultiScale(imageNp)
-            #If a face is there then append that in the list as well as Id of it
+            #顔がある場合は、リストとそのIDに追加します
             for (x,y,w,h) in faces:
                 faceSamples.append(imageNp[y:y+h,x:x+w])
                 Ids.append(Id)
     return faceSamples,Ids
 
 
-# Lấy các khuôn mặt và ID từ thư mục dataSet
+# dataSetディレクトリから顔とIDを取得する
 faceSamples,Ids = getImagesAndLabels('dataSet')
 
-# Train model để trích xuất đặc trưng các khuôn mặt và gán với từng nahan viên
+# モデルをトレーニングして顔を特徴付​​け、各nahanペレットに割り当てます
 recognizer.train(faceSamples, np.array(Ids))
 
-# Lưu model
+# モデルを保存する
 recognizer.save('recognizer/trainner.yml')
 
 print("Trained!")

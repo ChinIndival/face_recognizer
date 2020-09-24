@@ -4,23 +4,23 @@ from PIL import Image
 import pickle
 import sqlite3
 
-# Khởi tạo bộ phát hiện khuôn mặt
+# 顔検出器を初期化する
 faceDetect=cv2.CascadeClassifier('haarcascade_frontalface_default.xml');
 
-# Khởi tạo bộ nhận diện khuôn mặt
+# 顔検出器を初期化する
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read('recognizer/trainner.yml')
 
 
 
 id=0
-#set text style
+#文字スタイルを設定する
 fontface = cv2.FONT_HERSHEY_SIMPLEX
 fontscale = 1
 fontcolor = (0,255,0)
 fontcolor1 = (0,0,255)
 
-# Hàm lấy thông tin người dùng qua ID
+# IDでユーザー情報を取得する
 def getProfile(id):
     conn=sqlite3.connect("FaceBaseNew.db")
     cursor=conn.execute("SELECT * FROM People WHERE ID="+str(id))
@@ -30,18 +30,18 @@ def getProfile(id):
     conn.close()
     return profile
 
-# Khởi tạo camera
+# カメラを初期化する
 cam=cv2.VideoCapture(0);
 
 while(True):
 
-    # Đọc ảnh từ camera
+    # カメラから写真を読む
     ret,img=cam.read();
 
-    # Lật ảnh cho đỡ bị ngược
+    # 画像を上下逆にします
     img = cv2.flip(img, 1)
 
-    # Vẽ khung chữ nhật để định vị vùng người dùng đưa mặt vào
+    # 長方形のフレームを描いて顔を配置します
     centerH = img.shape[0] // 2;
     centerW = img.shape[1] // 2;
     sizeboxW = 300;
@@ -49,35 +49,35 @@ while(True):
     cv2.rectangle(img, (centerW - sizeboxW // 2, centerH - sizeboxH // 2),
                   (centerW + sizeboxW // 2, centerH + sizeboxH // 2), (255, 255, 255), 5)
 
-    # Chuyển ảnh về xám
+    # 写真を灰色にする
     gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-    # Phát hiện các khuôn mặt trong ảnh camera
+    # カメラの写真で顔を検出する
     faces=faceDetect.detectMultiScale(gray,1.3,5);
 
-    # Lặp qua các khuôn mặt nhận được để hiện thông tin
+    # 受け取った顔をループして情報を認識する
     for(x,y,w,h) in faces:
-        # Vẽ hình chữ nhật quanh mặt
+        # 顔の周りに長方形を描く
         cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
-        # Nhận diện khuôn mặt, trả ra 2 tham số id: mã nhân viên và dist (dộ sai khác)
+        # 顔検出、2つのidパラメーターを返します：従業員コードとdist
         id,dist=recognizer.predict(gray[y:y+h,x:x+w])
 
         profile=None
 
-        # Nếu độ sai khác < 25% thì lấy profile
+        # dist <25％の場合、プロファイルを取得します
         if (dist<=25):
             profile=getProfile(id)
 
-        # Hiển thị thông tin tên người hoặc Unknown nếu không tìm thấy
+        # 名前情報を表示するか、見つからない場合はUnknowを表示する
         if(profile!=None):
-            cv2.putText(img, "Name: " + str(profile[1]), (x,y+h+30), fontface, fontscale, fontcolor ,2)
+            cv2.putText(img,"ID: " + str(profile[0]) + " | Name: " + str(profile[1]), (x,y+h+30), fontface, fontscale, fontcolor ,2)
         else:
             cv2.putText(img, "Name: Unknown", (x, y + h + 30), fontface, fontscale, fontcolor1, 2)
 
 
     cv2.imshow('Face',img)
-    # Nếu nhấn q thì thoát
+    # qを押すと終了
     if cv2.waitKey(1)==ord('q'):
         break;
 cam.release()
