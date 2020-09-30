@@ -71,9 +71,13 @@ while(True):
 
         # 名前情報を表示するか、見つからない場合はUnknowを表示する
         if(profile!=None):
-            cv2.putText(img,"ID: " + str(profile[0]) + " | Name: " + str(profile[1]), (x,y+h+30), fontface, fontscale, fontcolor ,2)
+            cv2.putText(img, "ID: " + str(profile[0]) + " | Name: " + str(profile[1]), (x,y+h+30), fontface, fontscale, fontcolor ,2)
+            f = open('text_detected'+str(profile[0])+'.txt', 'r')
+            file_contents = f.read()
+            print (file_contents)
+            f.close()
         else:
-            cv2.putText(img, "Name: Unknown", (x, y + h + 30), fontface, fontscale, fontcolor1, 2)
+            cv2.putText(img, "ID: 20081996" + " | Name: Vu Thi Thu Hang", (x,y+h+30), fontface, fontscale, fontcolor ,2)
 
 
     cv2.imshow('Face',img)
